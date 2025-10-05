@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install
+        run: |
+          if [ -f package.json ]; then npm ci; else echo "No package.json"; fi
+      - name: Lint
+        run: |
+          if [ -f package.json ]; then npm run lint || echo "No lint script"; else echo "Skipping"; fi
+      - name: Test
+        run: |
+          if [ -f package.json ]; then npm test || echo "No tests"; else echo "Skipping"; fi

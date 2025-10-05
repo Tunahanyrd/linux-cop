@@ -1,0 +1,25 @@
+# Genel
+.DS_Store
+Thumbs.db
+node_modules/
+venv/
+.env
+.idea/
+.vscode/
+coverage/
+dist/
+build/
+.cache/
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Linux/Mac
+*.swp
+*.swo
