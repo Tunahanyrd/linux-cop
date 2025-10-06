@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "linuxcop"
+version = "0.1.0"
+description = "A terminal-based AI copilot for Linux"
+authors = [{ name = "Tunahan", email = "tunahanyrd@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+dependencies = [
+    "typer>=0.9",
+    "rich>=13.7",
+    "python-dotenv>=1.0",
+    "langchain>=0.1.16",
+    "langchain-google-genai>=1.0.2",
+    "langchain-community>=0.0.30",
+    "pydantic>=2.6",
+    "Pillow>=10.0",
+    "inquirer>=3.1"
+]
+
+[project.scripts]
+linuxcop = "src.app:app"
