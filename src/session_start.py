@@ -1,12 +1,12 @@
-from src.tools import tools_, get_fastfetch_summary
+from .tools import tools_, get_fastfetch_summary
 import inquirer
 from langchain_core.messages import SystemMessage
 from rich.console import Console
-from src.i18n import t, MOODS
+from .i18n import t, MOODS
 
 console = Console()
 HISTORY = [get_fastfetch_summary()]
-
+lang = None
 def start_console():
     # Language selection
     global lang
@@ -24,7 +24,7 @@ def start_console():
     console.print(f"{t(lang, 'chosen_mood')}: {mood}")
     HISTORY.append(SystemMessage(t(lang, "respond_in_lang")))
 
-    HISTORY.append(SystemMessage(f"""{t(lang, "mood_selected")}"""))
+    HISTORY.append(SystemMessage(f"""{t(lang, 'mood_selected')}"""))
     HISTORY.append(open(f"docs/prompts/mood/{mood_filename}.md").read())
     
     history_content = open("docs/memory/system/system_history.json", "r", encoding="utf-8").read().strip()

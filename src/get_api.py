@@ -1,5 +1,5 @@
-from i18n import t
-from session_start import lang, console
+from .i18n import t
+from .session_start import lang, console
 import os
 import json
 from pathlib import Path

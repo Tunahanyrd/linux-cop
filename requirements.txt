@@ -7,3 +7,5 @@ langchain-community>=0.0.30
 langgraph>=0.0.30
 pydantic>=2.6
 Pillow>=10.0
+regex>=2022.1.18
+langchain-experimental>=

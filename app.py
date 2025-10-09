@@ -38,7 +38,7 @@ try:
     with open("./docs/prompts/system_prompt.md", "r") as f:
         SYSTEM_PROMPT = f.read()
 except FileNotFoundError:
-    console.print(f"[bold red]{t(lang, "f_not_found")}[/bold red]")
+    console.print(f"[bold red]{t(lang, 'f_not_found')}[/bold red]")
     exit(1)
 
 agent_prompt = ChatPromptTemplate.from_messages([
@@ -99,7 +99,7 @@ def session():
         try:
             q = console.input("[bold magenta]👤 User[/bold magenta]: ").strip()
             if q.lower() in {"exit", "quit"}:
-                console.print(f"\n[bold red]{t(lang, "session_end")}[/bold red]")
+                console.print(f"\n[bold red]{t(lang, 'session_end')}[/bold red]")
                 break
             if not q:
                 continue
@@ -150,12 +150,12 @@ def session():
             resp_text = out.get("output", "").strip()
 
             if not resp_text:
-                console.print(f"[bold red]{t(lang, "resp_err")}[/bold red]\n")
+                console.print(f"[bold red]{t(lang, 'resp_err')}[/bold red]\n")
                 print(out)
                 continue
 
             resp_md = Markdown(resp_text)
-            console.print(Panel(resp_md, title=f"{t(lang, "response")}", border_style="cyan"))
+            console.print(Panel(resp_md, title=f"{t(lang, 'response')}", border_style="cyan"))
             add_to_history("ai", resp_text)
             HISTORY.extend([
                 HumanMessage(content=q),
@@ -163,11 +163,11 @@ def session():
             ])
 
         except KeyboardInterrupt:
-            console.print(f"\n\n[bold red]{t(lang, "terminate")}[/bold red]")
+            console.print(f"\n\n[bold red]{t(lang, 'terminate')}[/bold red]")
             break
 
         except Exception as e:
-            console.print(f"[bold red]🚨 {t(lang, "err")}[/bold red] {e}\n")
+            console.print(f"[bold red]🚨 {t(lang, 'err')}[/bold red] {e}\n")
 
 if __name__ == "__main__":
     app()
