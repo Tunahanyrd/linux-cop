@@ -14,14 +14,13 @@ import base64
 import re
 import json
 
-from src.i18n import t
-from src.session_start import console, HISTORY, start_console, lang
+from src import context
+from src.session_start import start_console
 from src.get_api import list_api_keys, add_api_key, delete_api_key, switch_api_key, get_api_key
 
 API = get_api_key()
 if not API or not API.strip():
     switch_api_key()
-
 
 app = typer.Typer()
 
@@ -38,7 +37,7 @@ try:
     with open("./docs/prompts/system_prompt.md", "r") as f:
         SYSTEM_PROMPT = f.read()
 except FileNotFoundError:
-    console.print(f"[bold red]{t(lang, 'f_not_found')}[/bold red]")
+    context.console.print(f"[bold red]{context.t(context.lang, 'f_not_found')}[/bold red]")
     exit(1)
 
 agent_prompt = ChatPromptTemplate.from_messages([
@@ -97,19 +96,19 @@ def session():
     start_console()
     while True:
         try:
-            q = console.input("[bold magenta]👤 User[/bold magenta]: ").strip()
+            q = context.console.input("[bold magenta]👤 User[/bold magenta]: ").strip()
             if q.lower() in {"exit", "quit"}:
-                console.print(f"\n[bold red]{t(lang, 'session_end')}[/bold red]")
+                context.console.print(f"\n[bold red]{context.t(context.lang, 'session_end')}[/bold red]")
                 break
             if not q:
                 continue
-
-            if q.startswith("!img "):
-                console.print("[red] Bu özellik geçici olarak devre dışıdır!")
+            
+            if q.startswith("!img "): # temporary disabled
+                context.console.print("[red] Temporary Disabled!")
                 continue
                 match = re.match(r'!img\s+(?:(["\'])(.*?)\1|(\S+))(?:\s+(.*))?$', q.strip())
                 if not match:
-                    console.print("[red]⚠️ Geçersiz !img kullanımı. Örnek: !img \"~/resim.png\" bu nedir[/red]")
+                    context.console.print("[red]⚠️ Geçersiz !img kullanımı. Örnek: !img \"~/resim.png\" bu nedir[/red]")
                     continue
 
                 image_path_str = match.group(2) or match.group(3)
@@ -117,19 +116,19 @@ def session():
 
                 image_path = Path(os.path.expanduser(image_path_str)).resolve()
                 if not image_path.exists():
-                    console.print(f"[bold red]❌ Görsel bulunamadı:[/bold red] {image_path}")
+                    context.console.print(f"[bold red]❌ Görsel bulunamadı:[/bold red] {image_path}")
                     continue
 
                 with open(image_path, "rb") as f:
                     data = base64.b64encode(f.read()).decode("utf-8")
 
-                console.print(f"[bold magenta]📷 Görsel eklendi:[/bold magenta] {image_path.name}")
+                context.console.print(f"[bold magenta]📷 Görsel eklendi:[/bold magenta] {image_path.name}")
 
                 llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.7)
 
                 messages = [
                     SystemMessage(content=SYSTEM_PROMPT),
-                    *HISTORY,
+                    *context.HISTORY,
                     HumanMessage(content=[
                         {"type": "text", "text": message_text},
                         {"type": "image_url", "image_url": f"data:image/png;base64,{data}"}
@@ -138,36 +137,36 @@ def session():
 
                 resp = llm.invoke(messages)
                 resp_text = resp.content if hasattr(resp, "content") else str(resp)
-                console.print(Panel(resp_text, title="🤖 Yanıt", border_style="magenta"))
+                context.console.print(Panel(resp_text, title="🤖 Yanıt", border_style="magenta"))
 
-                HISTORY.extend([
+                context.HISTORY.extend([
                     HumanMessage(content=f"[IMG] {message_text}"),
                     AIMessage(content=resp_text)
                 ])
                 continue
             add_to_history("user", q)
-            out = executor.invoke({"input": q, "chat_history": HISTORY})
+            out = executor.invoke({"input": q, "chat_history": context.HISTORY})
             resp_text = out.get("output", "").strip()
 
             if not resp_text:
-                console.print(f"[bold red]{t(lang, 'resp_err')}[/bold red]\n")
+                context.console.print(f"[bold red]{context.t(context.lang, 'resp_err')}[/bold red]\n")
                 print(out)
                 continue
 
             resp_md = Markdown(resp_text)
-            console.print(Panel(resp_md, title=f"{t(lang, 'response')}", border_style="cyan"))
+            context.console.print(Panel(resp_md, title=f"{context.t(context.lang, 'response')}", border_style="cyan"))
             add_to_history("ai", resp_text)
-            HISTORY.extend([
+            context.HISTORY.extend([
                 HumanMessage(content=q),
                 AIMessage(content=resp_text)
             ])
 
         except KeyboardInterrupt:
-            console.print(f"\n\n[bold red]{t(lang, 'terminate')}[/bold red]")
+            context.console.print(f"\n\n[bold red]{context.t(context.lang, 'terminate')}[/bold red]")
             break
 
         except Exception as e:
-            console.print(f"[bold red]🚨 {t(lang, 'err')}[/bold red] {e}\n")
+            context.console.print(f"[bold red]🚨 {context.t(context.lang, 'err')}[/bold red] {e}\n")
 
 if __name__ == "__main__":
     app()

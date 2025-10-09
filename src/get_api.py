@@ -1,5 +1,4 @@
-from .i18n import t
-from .session_start import lang, console
+from src import context
 import os
 import json
 from pathlib import Path
@@ -7,7 +6,6 @@ from pathlib import Path
 MAX_KEYS = 5
 KEY_FILE = Path.home() / ".linuxcop_api_keys"
 ACTIVE_FILE = Path.home() / ".linuxcop_active_key"
-
 
 def load_keys():
     """Kaydedilmiş API anahtarlarını JSON dosyasından yükler."""
@@ -58,17 +56,17 @@ def get_api_key() -> str:
     idx = get_active_index()
 
     if 0 <= idx < MAX_KEYS and keys[idx]:
-        console.print(f"[green]✔ {t(lang, 'using_key')} #{idx+1}[/green]")
+        context.console.print(f"[green]✔ {context.t(context.lang, 'using_key')} #{idx+1}[/green]")
         return keys[idx]
 
     for i, key in enumerate(keys):
         if key:
             set_active_index(i)
-            console.print(f"[green]✔ {t(lang, 'found_key')} (slot {i+1})[/green]")
+            context.console.print(f"[green]✔ {context.t(context.lang, 'found_key')} (slot {i+1})[/green]")
             return key
 
-    console.print("[red]❌ " + t(lang, "no_keys") + "[/red]")
-    api = console.input(f"🔑 {t(lang, 'get_key')}: ").strip()
+    context.console.print("[red]❌ " + context.t(context.lang, "no_keys") + "[/red]")
+    api = context.console.input(f"🔑 {context.t(context.lang, 'get_key')}: ").strip()
     keys[0] = api
     save_keys(keys)
     set_active_index(0)
@@ -79,16 +77,16 @@ def list_api_keys():
     """Kayıtlı API anahtarlarını listeler."""
     keys = load_keys()
     active_idx = get_active_index()
-    console.print(f"\n[yellow]{t(lang, 'list_keys')}[/yellow]")
+    context.console.print(f"\n[yellow]{context.t(context.lang, 'list_keys')}[/yellow]")
     for i, key in enumerate(keys, start=1):
         slot = f"{i}."
         prefix = "[cyan]*[/cyan]" if (i - 1) == active_idx else " "
         if key:
             masked = key[:6] + "..." + key[-4:]
-            console.print(f"{prefix} {slot} {masked}")
+            context.console.print(f"{prefix} {slot} {masked}")
         else:
-            console.print(f"{prefix} {slot} [dim]<{t(lang, 'empty')}>[/dim]")
-    console.print()
+            context.console.print(f"{prefix} {slot} [dim]<{context.t(context.lang, 'empty')}>[/dim]")
+    context.console.print()
 
 
 def add_api_key():
@@ -96,13 +94,13 @@ def add_api_key():
     keys = load_keys()
     for i in range(MAX_KEYS):
         if not keys[i]:
-            val = console.input(f"{t(lang, 'new_key_prompt')} (slot {i+1}): ").strip()
+            val = context.console.input(f"{context.t(context.lang, 'new_key_prompt')} (slot {i+1}): ").strip()
             if val:
                 keys[i] = val
                 save_keys(keys)
-                console.print(f"[green]✔ {t(lang, 'key_saved')} (slot {i+1})[/green]")
+                context.console.print(f"[green]✔ {context.t(context.lang, 'key_saved')} (slot {i+1})[/green]")
                 return
-    console.print(f"[red]⚠ {t(lang, 'all_full')}[/red]")
+    context.console.print(f"[red]⚠ {context.t(context.lang, 'all_full')}[/red]")
 
 
 def delete_api_key():
@@ -110,20 +108,20 @@ def delete_api_key():
     keys = load_keys()
     list_api_keys()
     try:
-        idx = int(console.input(f"{t(lang, 'delete_prompt')}: ").strip()) - 1
+        idx = int(context.console.input(f"{context.t(context.lang, 'delete_prompt')}: ").strip()) - 1
         if 0 <= idx < MAX_KEYS:
             if keys[idx]:
                 keys[idx] = None
                 save_keys(keys)
-                console.print(f"[green]✔ {t(lang, 'key_deleted')} (slot {idx+1})[/green]")
+                context.console.print(f"[green]✔ {context.t(context.lang, 'key_deleted')} (slot {idx+1})[/green]")
                 if get_active_index() == idx:
                     set_active_index(0)
             else:
-                console.print(f"[yellow]{t(lang, 'slot_empty')}[/yellow]")
+                context.console.print(f"[yellow]{context.t(context.lang, 'slot_empty')}[/yellow]")
         else:
-            console.print(f"[red]{t(lang, 'invalid_slot')}[/red]")
+            context.console.print(f"[red]{context.t(context.lang, 'invalid_slot')}[/red]")
     except ValueError:
-        console.print(f"[red]{t(lang, 'invalid_input')}[/red]")
+        context.console.print(f"[red]{context.t(context.lang, 'invalid_input')}[/red]")
 
 
 def switch_api_key():
@@ -136,7 +134,7 @@ def switch_api_key():
         if keys[next_idx]:
             set_active_index(next_idx)
             masked = keys[next_idx][:6] + "..." + keys[next_idx][-4:]
-            console.print(f"[green]🔄 {t(lang, 'switched_to')} (#{next_idx+1}) → {masked}[/green]")
+            context.console.print(f"[green]🔄 {context.t(context.lang, 'switched_to')} (#{next_idx+1}) → {masked}[/green]")
             return
 
-    console.print(f"[red]{t(lang, 'no_other_keys')}[/red]")
+    context.console.print(f"[red]{context.t(context.lang, 'no_other_keys')}[/red]")

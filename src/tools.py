@@ -5,6 +5,7 @@ from langchain_community.tools import (
     ListDirectoryTool, MoveFileTool, DeleteFileTool, FileSearchTool, WikipediaQueryRun, 
     DuckDuckGoSearchRun
 )
+from langchain_experimental.llm_bash.bash import BashProcess
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 import subprocess, mimetypes, os, datetime, base64
 from langchain.tools import tool
@@ -12,6 +13,9 @@ from langchain_core.tools import StructuredTool
 from PIL import Image
 from pathlib import Path
 from io import BytesIO
+import json
+from src import context
+
 API = os.getenv("GEMINI_API_KEY")
 
 MEM_PATH = Path("docs/memory")
@@ -23,49 +27,59 @@ class SilentTool(StructuredTool):
             result["data"] = "<hidden>"
         return result
     
-def get_fastfetch_summary() -> str:
-    """Returns a short fastfetch output for LLM context (hidden from user)."""
-    try:
-        res = subprocess.run(
-            "fastfetch --logo none",
-            shell=True, text=True,
-            capture_output=True, timeout=5
-        )
-        return "Sistem özellikler: " + res.stdout.strip() or "(fastfetch output unavailable)"
-    except Exception:
-        return "(fastfetch not installed)"
-    
 class ShellInputGemini(BaseModel):
-    """Gemini ile uyumlu tek komutluk shell input."""
+    """Gemini compatible single input shell"""
     command: str = Field(description="Single shell command to execute.")
 
 class GeminiShellTool(ShellTool):
-    """ShellTool'un Gemini uyumlu versiyonu."""
-    name: str = "terminal"
-    description: str = "Run a single shell command on this Linux machine."
     args_schema: type[BaseModel] = ShellInputGemini
+
+    """Agent main tool for running shell command."""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.process = BashProcess(
+            strip_newlines=False,
+            return_err_output=True,
+            persistent=True
+        )
+        self.name = "terminal"
+        self.description = "Run shell commands persistently on this machine."
 
     def _run(self, command: str, **kwargs) -> str:
         if isinstance(command, list):
             command = " && ".join(command)
-        print(f"Executing (Gemini mode): {command}")
+
+        context.console.print(f"[cyan]💻 {context.t(context.lang, 'execute')}: [/cyan] {command}")
+
         try:
-            return self.process.run([command])
+            result = self.process.run(command)
+
+            result = result.strip()
+            if result:
+                trimmed = result[:600] + ("..." if len(result) > 600 else "")
+                context.console.print(f"[green]✔ {context.t(context.lang, 'response')}:[/green]\n{trimmed}")
+            else:
+                context.console.print(f"[yellow]({context.t(context.lang, 'empty')})[/yellow]")
+
+            logs = []
+            if context.CMD_LOG.exists():
+                try:
+                    logs = json.loads(context.CMD_LOG.read_text())
+                except Exception:
+                    pass
+            logs.append({
+                "time": datetime.datetime.now().isoformat(timespec="seconds"),
+                "command": command,
+                "output": result[:2000]
+            })
+            context.CMD_LOG.write_text(json.dumps(logs[-100:], indent=2, ensure_ascii=False))
+
+            return result
+
         except Exception as e:
-            return f"Error executing command: {e}"
-        
-def get_fastfetch_summary() -> str:
-    """Returns a short fastfetch output for LLM context (hidden from user)."""
-    try:
-        res = subprocess.run(
-            "fastfetch --logo none",
-            shell=True, text=True,
-            capture_output=True, timeout=5
-        )
-        return "Sistem özellikler: " + res.stdout.strip() or "(fastfetch output unavailable)"
-    except Exception:
-        return "(fastfetch not installed)"
-    
+            context.console.print(f"[red]🚨 {context.t(context.lang, 'err')}:[/red] {e}")
+            return f"[ERROR] {e}"
+   
 def is_binary(path):
     mime = mimetypes.guess_type(path)[0]
     if mime is None:

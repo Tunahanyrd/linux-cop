@@ -1,9 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-src/linuxcop.egg-info/PKG-INFO
-src/linuxcop.egg-info/SOURCES.txt
-src/linuxcop.egg-info/dependency_links.txt
-src/linuxcop.egg-info/entry_points.txt
-src/linuxcop.egg-info/requires.txt
-src/linuxcop.egg-info/top_level.txt

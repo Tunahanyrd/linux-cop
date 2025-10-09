@@ -1,2 +1,0 @@
-[console_scripts]
-linuxcop = app:app

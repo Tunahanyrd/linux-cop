@@ -1,38 +1,39 @@
-from .tools import tools_, get_fastfetch_summary
 import inquirer
 from langchain_core.messages import SystemMessage
-from rich.console import Console
-from .i18n import t, MOODS
+from src import context
 
-console = Console()
-HISTORY = [get_fastfetch_summary()]
-lang = None
 def start_console():
     # Language selection
-    global lang
-    lang = inquirer.list_input("Language / Dil:", choices=["tr", "en"], default="tr")
-    console.rule(f"[bold yellow]{t(lang, 'session_title')}")
-    console.print(f"[dim]{t(lang, 'exit_hint')}[/dim]\n")
-    console.print(f"[dim]{t(lang, 'img_hint')}[/dim]\n")
+    context.lang = inquirer.list_input("Language / Dil:", choices=["tr", "en"], default="tr")
+    
+    # Initialize HISTORY with fastfetch
+    context.HISTORY.append(context.get_fastfetch_summary())
+    context.HISTORY.append("User's selected language is: ", context.lang, "please attention that")
+    context.console.rule(f"[bold yellow]{context.t(context.lang, 'session_title')}")
+    context.console.print(f"[dim]{context.t(context.lang, 'exit_hint')}[/dim]\n")
+    context.console.print(f"[dim]{context.t(context.lang, 'img_hint')}[/dim]\n")
 
-    console.print(f"[bold blue]{t(lang, 'system_loaded')}[/bold blue]\n")
+    context.console.print(f"[bold blue]{context.t(context.lang, 'system_loaded')}[/bold blue]\n")
     mood = inquirer.list_input(
-        t(lang, "choose_mood"),
-        choices=list(MOODS[lang].keys())
+        context.t(context.lang, "choose_mood"),
+        choices=list(context.MOODS[context.lang].keys())
     )
-    mood_filename = MOODS[lang[mood]]
-    console.print(f"{t(lang, 'chosen_mood')}: {mood}")
-    HISTORY.append(SystemMessage(t(lang, "respond_in_lang")))
+    mood_key = mood.lower()
+    mood_filename = context.MOODS.get(context.lang, {}).get(mood_key)
+    if not mood_filename:
+        mood_filename = context.MOODS.get(context.lang, {}).get(list(context.MOODS.get(context.lang, {}).keys())[0], "minimalist")
+    context.console.print(f"{context.t(context.lang, 'chosen_mood')}: {mood}")
+    context.HISTORY.append(SystemMessage(context.t(context.lang, "respond_in_lang")))
 
-    HISTORY.append(SystemMessage(f"""{t(lang, 'mood_selected')}"""))
-    HISTORY.append(open(f"docs/prompts/mood/{mood_filename}.md").read())
+    context.HISTORY.append(SystemMessage(context.t(context.lang, 'mood_selected').format(mood=mood_key)))
+    context.HISTORY.append(open(f"docs/prompts/mood/{mood_filename}.md").read())
     
     history_content = open("docs/memory/system/system_history.json", "r", encoding="utf-8").read().strip()
     if history_content:
-        HISTORY.append(SystemMessage(f"""{t(lang, "history_content")}"""))
-        HISTORY.append(history_content)
+        context.HISTORY.append(SystemMessage(f"""{context.t(context.lang, "history_content")}"""))
+        context.HISTORY.append(history_content)
 
     macros = open("docs/memory/agent/user_macros.md", "r", encoding="utf-8").read().strip()
     if macros:
-        HISTORY.append(SystemMessage(f"""{t(lang, "macros")} """))
-        HISTORY.append(macros)
+        context.HISTORY.append(SystemMessage(f"""{context.t(context.lang, "macros")} """))
+        context.HISTORY.append(macros)

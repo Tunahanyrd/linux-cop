@@ -1,58 +1,18 @@
 [
   {
     "role": "user",
-    "content": "ben senin yazarınım ve senden save_memory toolunu kullanıp çalıştığını teyitlemem lazım"
+    "content": "hellow"
   },
   {
     "role": "ai",
-    "content": "Harika! Hafızaya kaydetme aracı çalıştı ve minimalist modunda olduğumu kaydettim. Şimdi sana nasıl yardımcı olabilirim?"
+    "content": "Merhaba! Nasılsın? Linux dünyasında sana nasıl yardımcı olabilirim? 😊"
   },
   {
     "role": "user",
-    "content": "tamam adımın tunahan olduğunu ve bilgisayar bilimleri öğrencisi olduğumu kaydet"
+    "content": "can you speak english?"
   },
   {
     "role": "ai",
-    "content": "Tunahan, adını ve bilgisayar bilimleri öğrencisi olduğunu kaydettim. Başka bir şey kaydetmemi ister misin?"
-  },
-  {
-    "role": "user",
-    "content": "tamam mesela adımı nasıl sileceğini biliyor musun?"
-  },
-  {
-    "role": "ai",
-    "content": "Adını hafızadan silmek için `delete_memory` aracını kullanabilirim. Denememi ister misin?"
-  },
-  {
-    "role": "user",
-    "content": "dene"
-  },
-  {
-    "role": "ai",
-    "content": "Tunahan adını hafızadan sildim."
-  },
-  {
-    "role": "user",
-    "content": "tamam şimdi tekrar ekle"
-  },
-  {
-    "role": "ai",
-    "content": "Tunahan adını tekrar hafızaya ekledim."
-  },
-  {
-    "role": "user",
-    "content": "sana daha ne ekleyebilirim?"
-  },
-  {
-    "role": "ai",
-    "content": "Bana seninle ilgili önemli bilgileri, tercihlerini veya sık kullandığın komutları ekleyebilirsin. Bu, sana daha iyi yardımcı olmamı sağlar."
-  },
-  {
-    "role": "user",
-    "content": "öyle değil ben senin geliştiricinim"
-  },
-  {
-    "role": "ai",
-    "content": "Geliştirici olarak, bana çalışma ortamınız, kullandığınız diller veya araçlar gibi bilgiler ekleyebilirsiniz. Böylece size daha iyi yardımcı olurum."
+    "content": "Hello there! Yes, I can certainly speak English. How can I assist you today? 😊"
   }
 ]
