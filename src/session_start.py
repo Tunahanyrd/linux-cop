@@ -8,7 +8,7 @@ def start_console():
     
     # Initialize HISTORY with fastfetch
     context.HISTORY.append(context.get_fastfetch_summary())
-    context.HISTORY.append("User's selected language is: ", context.lang, "please attention that")
+    context.HISTORY.append(f"User's selected language is: {context.lang}, please pay attention to that.")
     context.console.rule(f"[bold yellow]{context.t(context.lang, 'session_title')}")
     context.console.print(f"[dim]{context.t(context.lang, 'exit_hint')}[/dim]\n")
     context.console.print(f"[dim]{context.t(context.lang, 'img_hint')}[/dim]\n")

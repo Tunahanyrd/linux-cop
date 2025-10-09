@@ -3,9 +3,7 @@ import os, typer
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from dotenv import load_dotenv
 from rich.markdown import Markdown
 from rich.panel import Panel
 from pathlib import Path
@@ -32,9 +30,9 @@ def get_history_file():
         return Path("~/.zsh_history").expanduser()
     else:
         return Path("~/.bash_history").expanduser()
-
+BASE_DIR = Path(__file__).resolve().parent.parent
 try:
-    with open("./docs/prompts/system_prompt.md", "r") as f:
+    with open(BASE_DIR / "/docs/prompts/system_prompt.md", "r") as f:
         SYSTEM_PROMPT = f.read()
 except FileNotFoundError:
     context.console.print(f"[bold red]{context.t(context.lang, 'f_not_found')}[/bold red]")
@@ -65,10 +63,20 @@ def add_to_history(role, content):
     chat_history.append({"role": role, "content": content})
     if len(chat_history) > 20:
         chat_history.pop(0)
-    with open("docs/memory/system/system_history.json", "w", encoding="utf-8") as f:
+    with open(BASE_DIR / "docs/memory/system/system_history.json", "w", encoding="utf-8") as f:
         json.dump(chat_history, f, ensure_ascii=False, indent=2)
 
 from src.get_api import list_api_keys, add_api_key, delete_api_key
+
+@app.callback(invoke_without_command=True)
+def main(ctx: typer.Context):
+    """
+    LinuxCop main entrypoint.
+    Runs 'cop session' by default if no command is provided.
+    """
+    if ctx.invoked_subcommand is None:
+        context.console.print("[bold cyan]No command provided — starting interactive session...[/bold cyan]")
+        start_console()
 
 @app.command()
 def apis():

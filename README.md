@@ -1,198 +1,163 @@
+# 🐧 LinuxCop
+
+**A mood-aware, multi-language AI copilot for your Linux terminal**
+
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![AI](https://img.shields.io/badge/AI-Google%20Gemini-orange.svg)](https://ai.google/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+---
+
+## 🚀 Quick Install
+
+Run this single command to install **LinuxCop**:
+
+```bash
+bash <(curl -s https://raw.githubusercontent.com/Tunahanyrd/linux-cop/master/install.sh)
+```
+
+Once installation finishes, restart your terminal or run:
+
+```bash
+source ~/.bashrc
+```
+
+Then start your AI copilot:
+
+```bash
+cop session
+```
+
+---
+
+## ✨ Highlights
+
+| Feature                     | Description                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| 🌍 **Multi-language UI**    | English 🇬🇧 and Turkish 🇹🇷 interface support                                             |
+| 🎭 **Mood System**          | Choose between 5 conversation styles (Humorous, Minimalist, Explanatory, Learning, Serious) |
+| 🔑 **API Key Manager**      | Add, remove, list, and switch between multiple Gemini API keys                              |
+| 🧠 **Persistent Memory**    | Remembers last conversations, saved facts, and user macros                                  |
+| 🧰 **Command Execution**    | Runs real shell commands with persistent `bash` session                                     |
+| 📚 **Integrated Knowledge** | Wikipedia & DuckDuckGo search tools                                                         |
+| 💾 **File Tools**           | Read, write, move, delete, and search files safely                                          |
+| 🔒 **Secure**               | Stores API keys locally with 0600 file permissions                                          |
+
+---
+
+## 💬 Example Interaction
+
+```
+👤 User: Show me my current directory
+🤖 AI: [Executes `pwd` → /home/user/linux-cop]
+
+👤 User: Go up one folder
+🤖 AI: [Executes `cd ..` → persistent session kept]
+
+👤 User: Search Wikipedia for “Linux kernel”
+🤖 AI: [Fetches summary and displays it]
+```
+
+---
+
+## 🧱 Project Structure
+
+```
+linux-cop/
+├── app.py                 # Main entry point
+├── install.sh             # One-line installer
+├── requirements.txt
+├── src/
+│   ├── context.py         # Global context and translations
+│   ├── get_api.py         # API key manager
+│   ├── i18n.py            # Internationalization
+│   ├── session_start.py   # Session handler & mood selection
+│   └── tools.py           # Shell, memory, and AI tools
+└── docs/
+    ├── prompts/           # Mood and system prompts
+    └── memory/            # Agent memory and macros
+```
+
+---
+
+## 🧠 Memory System
+
+* Saves last 20 messages to `docs/memory/system/system_history.json`
+* User macros stored in `docs/memory/agent/user_macros.md`
+* Agent learns user preferences dynamically
+
+Example:
+
+```
+👤 User: Remember that I prefer Python over C++
+🤖 AI: Got it — I’ll keep that in mind.
+```
+
+---
+
+## 🎭 Moods
+
+| Mood           | Description                     |
+| -------------- | ------------------------------- |
+| 😄 Humorous    | Casual and witty tone           |
+| 📝 Minimalist  | Short, clean answers            |
+| 📚 Explanatory | Detailed, educational responses |
+| 🎓 Learning    | Step-by-step instructor mode    |
+| 💼 Serious     | Professional tone               |
+
+---
+
+## 🔑 API Management
+
+```bash
+cop apis         # List all keys
+cop add-api      # Add new key
+cop del-api      # Delete a key
+cop switch-api   # Switch to next available key
+```
+
+Stored securely in `~/.linuxcop_api_keys` (JSON).
+
+---
+
+## 🛠 Development
+
+### Built With
+
+* [Python 3.10+](https://python.org)
+* [Typer](https://typer.tiangolo.com/) – CLI Framework
+* [Rich](https://rich.readthedocs.io/) – Terminal UI
+* [LangChain](https://www.langchain.com/) – AI agent orchestration
+* [Google Gemini](https://ai.google/) – Core model backend
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add new feature'`)
+4. Push and open a Pull Request
+
+---
+
+## 📄 License
+
+Licensed under the **MIT License**.
+See [LICENSE](LICENSE) for details.
+
+---
+
+## 💙 Credits
+
+* Google Gemini for language models
+* LangChain for agent framework
+* Rich & Typer for an amazing CLI experience
+
+---
+
 <div align="center">
-	<h1>LinuxCop</h1>
-	<b>A modern, mood-aware, multi-language AI copilot for your Linux terminal</b>
+	Made with ❤️ for the Linux community.  
+	<br>
+	⭐ Star this repo if you enjoy LinuxCop!
 </div>
-
----
-
-## Features
-
-- **Natural Language & Mood:** Interact in English or Turkish; Copilot adapts its style (humorous, minimalist, explanatory, serious, learning) to your mood selection.
-- **i18n:** Choose your interface and answer language (tr/en) at startup. All UI and system prompts adapt automatically.
-- **API Key Management:** Add, delete, and switch between multiple Google Gemini API keys securely (stored at `~/.linuxcop_api_key`).
-- **Memory:** Remembers the last 20 messages and important user facts for personalized, context-aware answers.
-- **Packagable:** Ready for PyPI/conda with `pyproject.toml` and `requirements.txt`.
-- **Advanced Tools:** File read/write, directory listing, Wikipedia & DuckDuckGo search, (image analysis coming soon).
-
----
-
-## Installation
-
-```fish
-# Install dependencies
-pip install -r requirements.txt
-
-# (optional) Install as a package
-pip install .
-```
-
----
-
-## Usage
-
-```fish
-# Start from terminal
-python app.py session
-# or if installed as a package
-linuxcop session
-```
-
-### Mood & Language Selection
-- On startup, select your language (tr/en) and mood. All answers and UI adapt automatically.
-
-### API Key Management
-- On first run, you will be prompted for your Google Gemini API key (stored securely).
-- On subsequent runs, the key is loaded automatically.
-- Manage keys with:
-	```fish
-	linuxcop apis        # List registered keys
-	linuxcop add-api     # Add a new key
-	linuxcop del-api     # Delete a key
-	linuxcop switch-api  # Switch to another key
-	```
-
----
-
-## Project Structure
-
-```
-├─ src/
-│  ├─ tools.py
-│  ├─ i18n.py
-│  ├─ session_start.py
-│  ├─ get_api.py
-├─ docs/
-│  ├─ prompts/
-│  │  ├─ system_prompt.md
-│  │  └─ mood/
-│  │      ├─ mizahi.md
-│  │      ├─ minimalist.md
-│  │      ├─ açıklayıcı.md
-│  │      ├─ ciddi.md
-│  │      ├─ eğitmen.md
-│  ├─ memory/
-│  │  ├─ agent/
-│  │  │   └─ agent_memory.md
-│  │  └─ system/
-│  │      └─ system_history.json
-├─ app.py
-├─ requirements.txt
-├─ pyproject.toml
-└─ README.md
-```
-
----
-
-## Contributing & License
-
-- MIT License.
-- Contributions welcome! Feel free to submit PRs or share new moods/language files.
-
----
-
-## Summary
-
-**LinuxCop** is a modern, mood-aware, multi-language, memory-enabled AI assistant for your Linux terminal. It supports secure Google Gemini API key management, i18n, and is ready for packaging and distribution.
----
-
-## Özellikler
-
-- **Doğal Dil ile Terminal**: Komutları ve soruları Türkçe veya İngilizce yazabilirsin, Copilot uygun komutları üretir ve çalıştırır.
-- **Gelişmiş Dosya Araçları**: Dosya okuma/yazma, dizin listeleme, dosya arama, taşıma, silme gibi işlemler.
-- **Wikipedia & Web Arama**: Wikipedia ve DuckDuckGo üzerinden bilgi sorgulama.
-- **Görsel Analiz**: !img makrosu ile görsel gönderip analiz ettirebilirsin (Gemini Pro ile).
-- **Kapsamlı Sistem Bilgisi**: Oturum başında sistem özetini otomatik gösterir.
-- **Güvenli ve Samimi Yanıtlar**: system_prompt.md ile belirlenen sıcak, açıklayıcı ve güvenli yanıt tarzı.
-
----
-
-## Temel Dosyalar
-
-- `app.py`: Ana uygulama. Typer ile komut satırı arayüzü sağlar. Sohbet geçmişi, görsel analizi ve komut yürütmeyi yönetir.
-- `src/tools.py`: Tüm yardımcı araçlar burada tanımlı. Shell komutları, dosya işlemleri, Wikipedia/web arama, ekran görüntüsü gibi fonksiyonlar içerir.
-- `docs/prompts/system_prompt.md`: Copilot'un kişiliği, güvenlik kuralları ve yanıt tarzı burada tanımlı.
-
----
-
-## Kurulum
-
-1. Gerekli Python paketlerini yükle:
-	 ```fish
-	 pip install -r requirements.txt
-	 ```
-2. `.env` dosyasına Google Gemini API anahtarını ekle:
-	 ```env
-	 GEMINI_API_KEY3=senin_anahtarın
-	 ```
-3. Uygulamayı başlat:
-	 ```fish
-	 python app.py session
-	 ```
-
----
-
-## Kullanım
-
-Terminalde çalıştır:
-
-```fish
-python app.py session
-```
-
-### Komut Örnekleri
-
-- Basit soru:
-	> Diskimde en çok yer kaplayan klasör hangisi?
-- Shell komutu:
-	> ls -lh /var/log
-- Dosya okuma:
-	> src/tools.py dosyasının ilk 100 satırını oku
-- Wikipedia araması:
-	> Wikipedia'da "Linux çekirdeği" nedir?
-- Görsel analizi:
-	> !img ~/resim.png Bu görselde ne var?
-
----
-
-## Klasör Yapısı
-
-```
-├─ src/
-│  └─ tools.py
-├─ docs/
-│  └─ prompts/
-│      └─ system_prompt.md
-├─ .github/
-│  └─ workflows/
-│      └─ ci.yml
-├─ .vscode/
-│  └─ settings.json
-├─ tests/
-├─ app.py
-├─ .env
-├─ .editorconfig
-├─ .gitignore
-├─ LICENSE
-├─ CHANGELOG.md
-├─ CONTRIBUTING.md
-├─ CODE_OF_CONDUCT.md
-└─ README.md
-```
-
----
-
-## Katkı ve Lisans
-
-- Katkı için `CONTRIBUTING.md` ve `CODE_OF_CONDUCT.md` dosyalarını inceleyin.
-- MIT Lisansı ile sunulmaktadır.
-
----
-
-## Notlar
-
-- Proje, Google Gemini API ile çalışır. Anahtarınızı `.env` dosyasına eklemeyi unutmayın.
-- Ekran görüntüsü alma özelliği KDE/Wayland + Spectacle gerektirir ve varsayılan olarak pasif durumdadır.
-
----
-
-Her türlü öneri ve katkı için PR gönderebilirsin!

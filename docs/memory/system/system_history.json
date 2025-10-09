@@ -1,18 +1,10 @@
 [
   {
     "role": "user",
-    "content": "hellow"
+    "content": "selam"
   },
   {
     "role": "ai",
-    "content": "Merhaba! Nasılsın? Linux dünyasında sana nasıl yardımcı olabilirim? 😊"
-  },
-  {
-    "role": "user",
-    "content": "can you speak english?"
-  },
-  {
-    "role": "ai",
-    "content": "Hello there! Yes, I can certainly speak English. How can I assist you today? 😊"
+    "content": "Merhaba! Linux sisteminde sana nasıl yardımcı olabilirim? Görüyorum ki Fedora Linux 42 kullanıyorsun ve sistem özelliklerin oldukça detaylı. Bu bilgiler ışığında, herhangi bir konuda yardıma ihtiyacın olursa veya merak ettiğin bir şey olursa çekinmeden sorabilirsin. 😊"
   }
 ]
