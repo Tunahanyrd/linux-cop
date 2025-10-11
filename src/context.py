@@ -2,12 +2,15 @@ from rich.console import Console
 from pathlib import Path
 from typing import Dict, List
 import subprocess
+import os
 
 console = Console()
 
 HISTORY: List = []
 
 lang: str = "tr"
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 MESSAGES: Dict[str, Dict[str, str]] = {
     "tr": {

@@ -44,18 +44,47 @@ else
     echo " requirements.txt was not found. Please check your installation."
 fi
 
-ALIAS_CMD="alias cop='python3 $(pwd)/app.py'"
-if ! grep -q "alias cop=" ~/.bashrc; then
-    echo "$ALIAS_CMD" >> ~/.bashrc
-    echo "'cop' command was added to .bashrc file."
+INSTALL_DIR="$(pwd)"
+ALIAS_CMD="alias cop='$INSTALL_DIR/venv/bin/python3 $INSTALL_DIR/app.py'"
+
+# Detect shell and add alias to appropriate config file
+if [ -n "$FISH_VERSION" ] || [ "$SHELL" = "$(command -v fish)" ]; then
+    CONFIG_FILE="$HOME/.config/fish/config.fish"
+    mkdir -p "$HOME/.config/fish"
+    if ! grep -q "alias cop=" "$CONFIG_FILE" 2>/dev/null; then
+        echo "$ALIAS_CMD" >> "$CONFIG_FILE"
+        echo "'cop' command was added to config.fish file."
+    else
+        echo "'cop' alias already defined in fish config."
+    fi
+elif [ -f "$HOME/.zshrc" ] || [ "$SHELL" = "$(command -v zsh)" ]; then
+    CONFIG_FILE="$HOME/.zshrc"
+    if ! grep -q "alias cop=" "$CONFIG_FILE"; then
+        echo "$ALIAS_CMD" >> "$CONFIG_FILE"
+        echo "'cop' command was added to .zshrc file."
+    else
+        echo "'cop' alias already defined in zsh config."
+    fi
 else
-    echo "'cop' alias already defined."
+    CONFIG_FILE="$HOME/.bashrc"
+    if ! grep -q "alias cop=" "$CONFIG_FILE"; then
+        echo "$ALIAS_CMD" >> "$CONFIG_FILE"
+        echo "'cop' command was added to .bashrc file."
+    else
+        echo "'cop' alias already defined in bash config."
+    fi
 fi
 
 echo ""
 echo " Setup complete!"
 echo "Restart the terminal or run this:"
-echo "  source ~/.bashrc"
+if [ -n "$FISH_VERSION" ] || [ "$SHELL" = "$(command -v fish)" ]; then
+    echo "  source ~/.config/fish/config.fish"
+elif [ -f "$HOME/.zshrc" ] || [ "$SHELL" = "$(command -v zsh)" ]; then
+    echo "  source ~/.zshrc"
+else
+    echo "  source ~/.bashrc"
+fi
 echo ""
 echo "Now you can type this:"
 echo " cop session"

@@ -26,14 +26,14 @@ def start_console():
     context.HISTORY.append(SystemMessage(context.t(context.lang, "respond_in_lang")))
 
     context.HISTORY.append(SystemMessage(context.t(context.lang, 'mood_selected').format(mood=mood_key)))
-    context.HISTORY.append(open(f"docs/prompts/mood/{mood_filename}.md").read())
+    context.HISTORY.append(open(context.BASE_DIR / f"docs/prompts/mood/{mood_filename}.md").read())
     
-    history_content = open("docs/memory/system/system_history.json", "r", encoding="utf-8").read().strip()
+    history_content = open(context.BASE_DIR / "docs/memory/system/system_history.json", "r", encoding="utf-8").read().strip()
     if history_content:
         context.HISTORY.append(SystemMessage(f"""{context.t(context.lang, "history_content")}"""))
         context.HISTORY.append(history_content)
 
-    macros = open("docs/memory/agent/user_macros.md", "r", encoding="utf-8").read().strip()
+    macros = open(context.BASE_DIR / "docs/memory/agent/user_macros.md", "r", encoding="utf-8").read().strip()
     if macros:
         context.HISTORY.append(SystemMessage(f"""{context.t(context.lang, "macros")} """))
         context.HISTORY.append(macros)

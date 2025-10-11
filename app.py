@@ -11,7 +11,7 @@ from src.tools import tools_
 import base64
 import re
 import json
-
+from subprocess import run
 from src import context
 from src.session_start import start_console
 from src.get_api import list_api_keys, add_api_key, delete_api_key, switch_api_key, get_api_key
@@ -30,9 +30,9 @@ def get_history_file():
         return Path("~/.zsh_history").expanduser()
     else:
         return Path("~/.bash_history").expanduser()
-BASE_DIR = Path(__file__).resolve().parent.parent
+
 try:
-    with open(BASE_DIR / "/docs/prompts/system_prompt.md", "r") as f:
+    with open(context.BASE_DIR / "docs/prompts/system_prompt.md", "r") as f:
         SYSTEM_PROMPT = f.read()
 except FileNotFoundError:
     context.console.print(f"[bold red]{context.t(context.lang, 'f_not_found')}[/bold red]")
@@ -63,10 +63,8 @@ def add_to_history(role, content):
     chat_history.append({"role": role, "content": content})
     if len(chat_history) > 20:
         chat_history.pop(0)
-    with open(BASE_DIR / "docs/memory/system/system_history.json", "w", encoding="utf-8") as f:
+    with open(context.BASE_DIR / "docs/memory/system/system_history.json", "w", encoding="utf-8") as f:
         json.dump(chat_history, f, ensure_ascii=False, indent=2)
-
-from src.get_api import list_api_keys, add_api_key, delete_api_key
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
@@ -76,8 +74,7 @@ def main(ctx: typer.Context):
     """
     if ctx.invoked_subcommand is None:
         context.console.print("[bold cyan]No command provided — starting interactive session...[/bold cyan]")
-        start_console()
-
+        session()
 @app.command()
 def apis():
     """List all registered Gemini API keys."""

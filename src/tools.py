@@ -18,7 +18,7 @@ from src import context
 
 API = os.getenv("GEMINI_API_KEY")
 
-MEM_PATH = Path("docs/memory")
+MEM_PATH = context.BASE_DIR / "docs/memory"
 
 class SilentTool(StructuredTool):
     def run(self, *args, **kwargs):

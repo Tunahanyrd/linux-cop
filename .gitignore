@@ -1,16 +1,9 @@
-.DS_Store
-Thumbs.db
-node_modules/
 venv/
 .env
-.idea/
 .vscode/
-coverage/
 dist/
 build/
 .cache/
 
 __pycache__/
 *.pyc
-build
-dist
