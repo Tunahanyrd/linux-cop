@@ -67,6 +67,7 @@ def get_api_key() -> str:
 
     context.console.print("[red]❌ " + context.t(context.lang, "no_keys") + "[/red]")
     api = context.console.input(f"🔑 {context.t(context.lang, 'get_key')}: ").strip()
+    api = context.sanitize_input(api)
     keys[0] = api
     save_keys(keys)
     set_active_index(0)
@@ -95,6 +96,7 @@ def add_api_key():
     for i in range(MAX_KEYS):
         if not keys[i]:
             val = context.console.input(f"{context.t(context.lang, 'new_key_prompt')} (slot {i+1}): ").strip()
+            val = context.sanitize_input(val)
             if val:
                 keys[i] = val
                 save_keys(keys)
@@ -108,7 +110,9 @@ def delete_api_key():
     keys = load_keys()
     list_api_keys()
     try:
-        idx = int(context.console.input(f"{context.t(context.lang, 'delete_prompt')}: ").strip()) - 1
+        idx_str = context.console.input(f"{context.t(context.lang, 'delete_prompt')}: ").strip()
+        idx_str = context.sanitize_input(idx_str)
+        idx = int(idx_str) - 1
         if 0 <= idx < MAX_KEYS:
             if keys[idx]:
                 keys[idx] = None

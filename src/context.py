@@ -128,3 +128,13 @@ def get_fastfetch_summary() -> str:
         return "(fastfetch not installed)"
 
 CMD_LOG = Path.home() / ".linuxcopilot_cmdlog.json"
+
+
+def sanitize_input(text: str) -> str:
+    """
+    Docker/locale sorunları için surrogate karakterleri temizler.
+    UTF-8 encoding hatalarını önler.
+    """
+    if not text:
+        return text
+    return text.encode('utf-8', errors='ignore').decode('utf-8', errors='ignore')

@@ -102,6 +102,7 @@ def session():
     while True:
         try:
             q = context.console.input("[bold magenta]👤 User[/bold magenta]: ").strip()
+            q = context.sanitize_input(q)
             if q.lower() in {"exit", "quit"}:
                 context.console.print(f"\n[bold red]{context.t(context.lang, 'session_end')}[/bold red]")
                 break
