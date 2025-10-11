@@ -22,15 +22,20 @@ else
     echo " Python3 was found: $(python3 --version)"
 fi
 
-if [ ! -d "venv" ]; then
-    echo " Python venv is being created..."
-    python3 -m venv venv
-else 
-    echo " Venv was found."
+if [ ! -d "venv" ] || [ ! -f "venv/bin/activate" ]; then
+    echo " Python venv is being created (or repaired)..."
+    rm -rf venv 2>/dev/null || true
+    python3 -m venv venv || {
+        echo "❌ Failed to create Python virtual environment. Check your python3-venv package."
+        exit 1
+    }
+else
+    echo " ✅ Venv looks healthy."
 fi
 
-if [ ! -d "fastfetch" ]; then
-    echo " NOTE: Fastfetch was not found. Please ensure the agent runs stably."
+if ! command -v fastfetch &> /dev/null; then
+    echo " ⚠️ Fastfetch not found. You can install it with:"
+    echo "    apt install fastfetch"
 fi
 
 source venv/bin/activate
