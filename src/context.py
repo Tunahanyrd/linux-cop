@@ -2,8 +2,8 @@ from rich.console import Console
 from pathlib import Path
 from typing import Dict, List
 import subprocess
-import os
-
+import json
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 console = Console()
 
 HISTORY: List = []
@@ -12,106 +12,35 @@ lang: str = "tr"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MESSAGES: Dict[str, Dict[str, str]] = {
-    "tr": {
-        "session_title": "🧠 Linux Copilot Oturumu",
-        "exit_hint": "Çıkmak için 'exit' veya 'quit' yaz.",
-        "img_hint": "!img 'dosya_yolu' [soru] makrosu ile resim gönderebilirsiniz. (Geçici olarak devre dışı)",
-        "system_loaded": "📦 Sistem bilgisi yüklendi.",
-        "choose_mood": "Konuşma tarzı seçin:",
-        "chosen_mood": "Seçilen mood",
-        "respond_in_lang": "Lütfen tüm yanıtlarını Türkçe ver.",
-        "history_content": "Sistemde duran önceki mesajlar:",
-        "macros": "Sistemde kayıtlı macrolar:",
-        "mood_selected": "Kullanıcı {mood} tarzında konuşmanı istedi. İşte {mood} moodunun tanıtımı:",
-        "session_end": "Oturum sonlandırıldı.",
-        "resp_err": "⚠️ Modelden geçerli bir yanıt alınamadı.",
-        "response": "🤖 Yanıt",
-        "terminate": "Oturum manuel olarak sonlandırıldı (Ctrl+C).",
-        "err": "Hata:",
-        "f_not_found": "HATA: system_prompt.md dosyası bulunamadı. Lütfen oluşturun.",
-        "get_key": "Google Gemini API anahtarınızı girin:",
-        "empty_key": "API anahtarı yuvası boş:",
-        "found_key": "Geçerli Gemini API anahtarı bulundu.",
-        "not_found": "Hiç API anahtarı bulunamadı.",
-        "no_keys": "Hiç API anahtarı bulunamadı.",
-        "list_keys": "Kayıtlı API Anahtarları:",
-        "empty": "boş",
-        "new_key_prompt": "Yeni API anahtarı girin",
-        "key_saved": "Anahtar kaydedildi",
-        "all_full": "Tüm slotlar dolu! Önce birini silin.",
-        "delete_prompt": "Silmek istediğiniz anahtarın numarasını girin",
-        "key_deleted": "Anahtar silindi",
-        "slot_empty": "Bu slot zaten boş.",
-        "invalid_slot": "Geçersiz slot numarası.",
-        "invalid_input": "Geçersiz giriş.",
-        "using_key": "Aktif API anahtarı kullanılıyor",
-        "switched_to": "Yeni aktif API anahtarı seçildi",
-        "no_other_keys": "Kullanılabilir başka anahtar yok.",
-        "execute": "Çalıştırılıyor",
-    },
-    "en": {
-        "session_title": "🧠 Linux Copilot Session",
-        "exit_hint": "Type 'exit' or 'quit' to leave.",
-        "img_hint": "You can send an image with !img 'file_path' [question]. (Temporarily disabled)",
-        "system_loaded": "📦 System info loaded.",
-        "choose_mood": "Choose a conversation style:",
-        "chosen_mood": "Chosen mood",
-        "respond_in_lang": "Please respond in English for all answers.",
-        "history_content": "Last messages on this system:",
-        "macros": "Macros saved in the system:",
-        "mood_selected": "The user requested you to speak in {mood} style. Here is an introduction to the {mood} mood:",
-        "session_end": "Session ended.",
-        "resp_err": "⚠️ No valid response was received from the model.",
-        "response": "🤖 Response",
-        "terminate": "The session was manually terminated (Ctrl+C).",
-        "err": "Error:",
-        "f_not_found": "ERROR: The system_prompt.md file could not be found. Please create it.",
-        "get_key": "Please enter your Google Gemini API key:",
-        "empty_key": "API key slot is empty:",
-        "not_found": "No API key found.",
-        "no_keys": "No API key found.",
-        "found_key": "A valid Gemini API key has been found.",
-        "list_keys": "Registered API Keys:",
-        "empty": "empty",
-        "new_key_prompt": "Enter new API key",
-        "key_saved": "Key saved",
-        "all_full": "All slots are full! Please delete one first.",
-        "delete_prompt": "Enter the number of the key to delete",
-        "key_deleted": "Key deleted",
-        "slot_empty": "That slot is already empty.",
-        "invalid_slot": "Invalid slot number.",
-        "invalid_input": "Invalid input.",
-        "using_key": "Using active API key",
-        "switched_to": "Switched to new active API key",
-        "no_other_keys": "No other available API keys.",
-        "execute": "Executing",
-    },
-}
+MESSAGES: Dict[str, Dict[str, str]] = json.loads((BASE_DIR / "docs/i18n/MESSAGES.json").read_text(encoding="utf-8"))
+MOODS = json.loads((BASE_DIR / "docs/i18n/MOODS.json").read_text(encoding="utf-8"))
 
-MOODS = {
-    "tr": {
-        "açıklayıcı": "açıklayıcı",
-        "ciddi": "ciddi",
-        "eğitmen": "eğitmen",
-        "minimalist": "minimalist",
-        "mizahi": "mizahi",
-    },
-    "en": {
-        "explanatory": "açıklayıcı",
-        "serious": "ciddi",
-        "learning": "eğitmen",
-        "minimalist": "minimalist",
-        "humorous": "mizahi",
-    },
-}
+llm=None
+agent=None
+executor=None
+def t(lang: str, key: str) -> str:
+    """Translate key to given language; fallback to English."""
+    table = MESSAGES.get(lang) or MESSAGES["en"]
+    return table.get(key, MESSAGES["en"].get(key, key))
 
+try:
+    with open(BASE_DIR / "docs/prompts/system_prompt.md", "r") as f:
+        SYSTEM_PROMPT = f.read()
+except FileNotFoundError:
+    console.print(f"[bold red]{t(lang, 'f_not_found')}[/bold red]")
+    exit(1)
+
+agent_prompt = ChatPromptTemplate.from_messages([
+    ("system", SYSTEM_PROMPT),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("human", "{input}"),   
+    MessagesPlaceholder(variable_name="agent_scratchpad"),
+])
 
 def t(language: str, key: str) -> str:
     """Translate key to given language; fallback to English."""
     table = MESSAGES.get(language) or MESSAGES["en"]
     return table.get(key, MESSAGES["en"].get(key, key))
-
 
 def get_fastfetch_summary() -> str:
     """Returns a short fastfetch output for LLM context."""
@@ -129,7 +58,52 @@ def get_fastfetch_summary() -> str:
 
 CMD_LOG = Path.home() / ".linuxcopilot_cmdlog.json"
 
+model_choices = [
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
 
+    "ibm-granite/granite-4.0-micro",
+    "ibm-granite/granite-4.0-micro-base",
+    "ibm-granite/granite-4.0-h-micro",
+    "ibm-granite/granite-4.0-h-micro-base",
+    "ibm-granite/granite-4.0-h-tiny",
+    "ibm-granite/granite-4.0-h-tiny-base",
+    "ibm-granite/granite-4.0-h-small",
+    "ibm-granite/granite-4.0-h-small-base",
+    "ibm-granite/granite-4.0-tiny-preview",
+    "ibm-granite/granite-4.0-tiny-base-preview",
+]
+
+def get_llm(selection: str, tools=None):
+    if selection.startswith("gemini"):
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        from src.get_api import get_api_key
+        API = get_api_key()
+        return ChatGoogleGenerativeAI(
+            model=selection,
+            temperature=0.7,
+            google_api_key=API,
+        )
+
+    elif selection.startswith("ibm-granite"):
+        from src.smolagent_to_langchain import Wrapper
+        print(f"[INFO] Using local Granite model: {selection}")
+        return Wrapper(selection, tools or [])
+
+    else:
+        from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
+        model = HuggingFaceEndpoint(
+            repo_id=selection,
+            max_new_tokens=512,
+            top_k=10,
+            top_p=0.95,
+            temperature=0.01,
+            repetition_penalty=1.03,
+            provider="auto",
+        )
+        return ChatHuggingFace(llm=model)
+
+chat_history = []
 def sanitize_input(text: str) -> str:
     """
     Docker/locale sorunları için surrogate karakterleri temizler.

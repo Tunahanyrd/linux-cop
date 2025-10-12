@@ -5,6 +5,7 @@ from src import context
 def start_console():
     # Language selection
     context.lang = inquirer.list_input("Language / Dil:", choices=["tr", "en"], default="tr")
+    context.model = inquirer.list_input("Model:", choices=context.model_choices, default="gemini-2.5-flash")
     
     # Initialize HISTORY with fastfetch
     context.HISTORY.append(context.get_fastfetch_summary())

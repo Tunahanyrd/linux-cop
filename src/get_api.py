@@ -1,8 +1,7 @@
-from src import context
 import os
 import json
 from pathlib import Path
-
+from src import context
 MAX_KEYS = 5
 KEY_FILE = Path.home() / ".linuxcop_api_keys"
 ACTIVE_FILE = Path.home() / ".linuxcop_active_key"

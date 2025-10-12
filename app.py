@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
 import os, typer
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from rich.markdown import Markdown
 from rich.panel import Panel
 from pathlib import Path
-from src.tools import tools_
 import base64
 import re
 import json
-from subprocess import run
 from src import context
 from src.session_start import start_console
-from src.get_api import list_api_keys, add_api_key, delete_api_key, switch_api_key, get_api_key
-
-API = get_api_key()
-if not API or not API.strip():
-    switch_api_key()
+from src.get_api import list_api_keys, add_api_key, delete_api_key, switch_api_key
+from src import tools
+from langchain.agents.tool_calling_agent.base import create_tool_calling_agent
+from langchain.agents import AgentExecutor
 
 app = typer.Typer()
 
@@ -31,32 +25,9 @@ def get_history_file():
     else:
         return Path("~/.bash_history").expanduser()
 
-try:
-    with open(context.BASE_DIR / "docs/prompts/system_prompt.md", "r") as f:
-        SYSTEM_PROMPT = f.read()
-except FileNotFoundError:
-    context.console.print(f"[bold red]{context.t(context.lang, 'f_not_found')}[/bold red]")
-    exit(1)
+llm = context.llm
 
-agent_prompt = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_PROMPT),
-    MessagesPlaceholder(variable_name="chat_history"),
-    ("human", "{input}"),   
-    MessagesPlaceholder(variable_name="agent_scratchpad"),
-])
-
-llm = ChatGoogleGenerativeAI(
-    model = "gemini-2.5-flash",
-    temperature=0.7,
-    google_api_key=API
-)
-
-agent = create_tool_calling_agent(llm, tools_, agent_prompt)
-executor = AgentExecutor(
-    agent=agent,
-    tools=tools_,
-    verbose=False,
-)
+agent = context.agent
 chat_history = []
 
 def add_to_history(role, content):
@@ -99,6 +70,14 @@ def switch_api():
 def session():
     """Linux Copilot session."""
     start_console()
+    context.llm = context.get_llm(context.model, tools=tools.tools_)
+    if hasattr(context.llm, "agent"):
+        print("[INFO] Local Granite agent active (smolagents).")
+        context.agent = context.llm.agent
+        context.executor = context.llm
+    else:
+        context.agent = create_tool_calling_agent(context.llm, tools.tools_, context.agent_prompt)
+        context.executor = AgentExecutor(agent=context.agent, tools=tools.tools_, verbose=False)
     while True:
         try:
             q = context.console.input("[bold magenta]👤 User[/bold magenta]: ").strip()
@@ -114,23 +93,23 @@ def session():
                 continue
                 match = re.match(r'!img\s+(?:(["\'])(.*?)\1|(\S+))(?:\s+(.*))?$', q.strip())
                 if not match:
-                    context.console.print("[red]⚠️ Geçersiz !img kullanımı. Örnek: !img \"~/resim.png\" bu nedir[/red]")
+                    context.console.print(f"[red]⚠️ {t(lang, 'img_cmd')} [/red]")
                     continue
 
                 image_path_str = match.group(2) or match.group(3)
-                message_text = (match.group(4) or "Görseli analiz et").strip()
+                message_text = (match.group(4)).strip()
 
                 image_path = Path(os.path.expanduser(image_path_str)).resolve()
                 if not image_path.exists():
-                    context.console.print(f"[bold red]❌ Görsel bulunamadı:[/bold red] {image_path}")
+                    context.console.print(f"[bold red]❌ {t(lang, 'img_nf')}[/bold red] {image_path}")
                     continue
 
                 with open(image_path, "rb") as f:
                     data = base64.b64encode(f.read()).decode("utf-8")
 
-                context.console.print(f"[bold magenta]📷 Görsel eklendi:[/bold magenta] {image_path.name}")
+                context.console.print(f"[bold magenta]📷 [/bold magenta] {image_path.name}")
 
-                llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.7)
+                llm = context.llm
 
                 messages = [
                     SystemMessage(content=SYSTEM_PROMPT),
@@ -151,8 +130,15 @@ def session():
                 ])
                 continue
             add_to_history("user", q)
-            out = executor.invoke({"input": q, "chat_history": context.HISTORY})
-            resp_text = out.get("output", "").strip()
+            if hasattr(context.llm, "agent"):
+                out = context.executor.invoke(q)  # Granite path: düz metin gönder
+            else:
+                out = context.executor.invoke({"input": q, "chat_history": context.HISTORY})
+
+            if isinstance(out, dict):
+                resp_text = out.get("output", "").strip()
+            else:
+                resp_text = str(out).strip()
 
             if not resp_text:
                 context.console.print(f"[bold red]{context.t(context.lang, 'resp_err')}[/bold red]\n")

@@ -1,0 +1,16 @@
+{
+    "tr": {
+        "açıklayıcı": "açıklayıcı",
+        "ciddi": "ciddi",
+        "eğitmen": "eğitmen",
+        "minimalist": "minimalist",
+        "mizahi": "mizahi"
+    },
+    "en": {
+        "explanatory": "açıklayıcı",
+        "serious": "ciddi",
+        "learning": "eğitmen",
+        "minimalist": "minimalist",
+        "humorous": "mizahi"
+    }
+}

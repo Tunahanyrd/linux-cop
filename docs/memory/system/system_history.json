@@ -1,34 +1,10 @@
 [
   {
     "role": "user",
-    "content": "selamn"
+    "content": "selam"
   },
   {
     "role": "ai",
-    "content": "Selam! 👋 Birlikte ne yapmak istersin? Terminal'de bir şey denemek, bir sorun çözmek ya da yeni bir şey öğrenmek — hepsi için buradayım. Hadi başlayalım! 🚀"
-  },
-  {
-    "role": "user",
-    "content": "nasılsın"
-  },
-  {
-    "role": "ai",
-    "content": "Ben bir yapay zeka olduğum için hislerim veya ruh halim yok ama görevimi yerine getirmek için her zaman hazırım! 😊 Sen nasılsın, nasıl yardımcı olabilirim? Bugün terminalde ne keşfetmek istersin?"
-  },
-  {
-    "role": "user",
-    "content": "hi!"
-  },
-  {
-    "role": "ai",
-    "content": "Hey there! 👋 What can I tackle together today? Whether it's trying a new command, troubleshooting something, or learning a cool trick — I'm here for it. Let's dive in! 🚀"
-  },
-  {
-    "role": "user",
-    "content": "what r u"
-  },
-  {
-    "role": "ai",
-    "content": "I am your **Linux Copilot**! 👋 Think of me as your friendly assistant right here in your Linux terminal. My main goal is to understand what you want to achieve, translate that into safe and correct Linux commands, and help you learn along the way.\n\nSo, whether you're looking to:\n*   **Figure out how to use a specific command**\n*   **Troubleshoot an issue you're facing**\n*   **Or simply learn new things about Linux**\n\nI'm here to guide you through it all. Consider me your companion for making your terminal experience easier and more enjoyable! 😊"
+    "content": "selam\n\n**Answer:**  \nThe correct answer is **b) 2.5%**\n\n### Explanation:\n\nTo determine the percentage of students who failed, we need to calculate how many marks are required for failure and then find what fraction this represents out of the total possible marks.\n\n1. **Determine Marks Required for Passing:**\n   - The passing mark is given as \\(50\\%\\).\n   - Total maximum marks = 300.\n   \\[\n   \\text{Passing marks} = 50\\% \\times 300 = \\frac{50}{100} \\times (3 \\times x_0) ="
   }
 ]

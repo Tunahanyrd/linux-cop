@@ -7,12 +7,16 @@ emoji>=2.12.1
 # --- AI / LLM Integration ---
 openai>=1.35.0
 langchain>=0.2.6
-langchain-community>=0.2.6
+langchain-community>=0.3.10
 langchain-experimental>=0.0.62
 langchainhub>=0.1.18
 langsmith>=0.1.92
 langchain-google-genai>=2.1.12
-
+langchain-huggingface>=0.3.1
+transformers>=4.57.0
+accelerate>=1.10.0
+bitsandbytes>=0.48.1
+smolagent>=1.22.0
 # --- Agent and Tools ---
 duckduckgo-search>=5.3.1
 ddgs>=9.6.0

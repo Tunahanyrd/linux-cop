@@ -46,6 +46,9 @@ class GeminiShellTool(ShellTool):
         self.description = "Run shell commands persistently on this machine."
 
     def _run(self, command: str, **kwargs) -> str:
+        if isinstance(command, dict) and "command" in command:
+            command = command["command"]
+
         if isinstance(command, list):
             command = " && ".join(command)
 
