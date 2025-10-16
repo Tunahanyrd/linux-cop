@@ -7,6 +7,6 @@ build/
 credentials.json
 settings.yaml
 config/
-
+linux_cop.egg-info/
 __pycache__/
 *.pyc

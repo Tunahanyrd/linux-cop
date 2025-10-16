@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # cli/main.py
-from linux_cop.cli.startup import startup_screen
-from linux_cop.cli.commands import handle_command
-from linux_cop.core.agents.base_agent import run_agent
-from linux_cop.core.utils.parser import parse
-from rich.console import Console
-from rich.markdown import Markdown
-import sys, signal
+import traceback
+try:
+    from linux_cop.cli.startup import startup_screen
+    from linux_cop.cli.commands import handle_command
+    from linux_cop.core.agents.base_agent import run_agent
+    from linux_cop.core.utils.parser import parse
+    from rich.console import Console
+    from rich.markdown import Markdown
+    import sys, signal
+except Exception as e:
+    traceback.print_exc()
+    print("an exception occured", e)
+    raise SystemExit(-1)
 
 def _handle_sigint(signum, frame):
     print("\n[bold yellow]👋 Goodbye![/bold yellow]")

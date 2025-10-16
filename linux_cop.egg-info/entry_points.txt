@@ -1,2 +1,0 @@
-[console_scripts]
-linux-cop = linux_cop.cli.main:main

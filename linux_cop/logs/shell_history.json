@@ -1,7 +1,2 @@
 [
-  {
-    "time": "2025-10-16T09:12:38",
-    "command": "date \"+%Y-%m-%d %H:%M:%S\"",
-    "output": "bash: uçbirim süreç grunu (35960) ayarlanamaz: Aygıt için G/Ç kontrol işlemi uygun değil\r\nbash: bu kabukta iş denetimi yok\r\n\u001b]0;tunahan@fedora:~/Masaüstü/linux-cop\u0007\u001b[?2004h\u001b[0m\u001b[32mtunahan@fedora\u001b[0m:\u001b[32m~/Masaüstü/linux-cop\u001b[0m$"
-  }
 ]
