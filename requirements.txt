@@ -17,3 +17,4 @@ jsonpatch>=1.30
 inquirer>=3.4.0
 rich>=14.1.0
 ddgs>=9.6.0
+jsonpatch>=1.32
