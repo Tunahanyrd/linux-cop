@@ -36,14 +36,15 @@ def main():
         if handled:
             continue
         verbosity = context.get("verbosity", "minimal")
-
-        run_agent(
+        try:
+            run_agent(
             user_input,
             model_name=context["model"],
             thread_id=session,
             verbosity=verbosity
-        )
-
+            )
+        except Exception as e:
+            print("An error occured: ", e)
 if __name__ == "__main__":
     try:
         main()

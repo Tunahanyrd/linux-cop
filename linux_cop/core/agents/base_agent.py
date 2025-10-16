@@ -17,6 +17,7 @@ except ImportError:
 from linux_cop.core.middleware.sys_info_mw import SystemInfoMiddleware
 from linux_cop.core.tools import get_all_tools
 from linux_cop.core.utils.parser import parse, reset_parser_state
+from linux_cop.core.utils.parse_user import parse_user
 from linux_cop.core.env.apis import load
 import uuid
 
@@ -53,7 +54,7 @@ def build_agent(model_name: str = "google_genai:gemini-2.5-flash",
     )
     return agent
 
-def run_agent(user_input: str, 
+def run_agent(user_input: str,
               model_name: str = "google_genai:gemini-2.5-flash",
               thread_id: str = f"cli-session-{uuid.uuid4().hex[:8]}",
               verbosity: str= "minimal"):
@@ -62,7 +63,7 @@ def run_agent(user_input: str,
     CLI and web interface calling here.
     """
     load()
-
+    final_input = parse_user(user_input)
     agent = build_agent(model_name=model_name)
 
     config = {"configurable": {"thread_id": thread_id}}
@@ -71,7 +72,7 @@ def run_agent(user_input: str,
     time_msg = SystemMessage(
         content=f"Current local datetime: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}"
     )
-    input_data = {"messages": [time_msg, HumanMessage(content=user_input)]}
+    input_data = {"messages": [time_msg, HumanMessage(content=final_input["content"])]}
     
     reset_parser_state()
     for event in agent.stream(input_data, stream_mode="updates", config=config):
