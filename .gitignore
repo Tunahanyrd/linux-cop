@@ -4,6 +4,9 @@ venv/
 dist/
 build/
 .cache/
+credentials.json
+settings.yaml
+config/
 
 __pycache__/
 *.pyc

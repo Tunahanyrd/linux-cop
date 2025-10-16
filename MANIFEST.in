@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include requirements.txt
+recursive-include linux_cop/config *.yaml *.json
+recursive-include linux_cop/docs *.md *.json
+recursive-include linux_cop/logs *.json

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "linux_cop"
+version = "0.1.0"
+description = "Linux Copilot CLI"
+authors = [{ name = "tunahanyrd" }]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.scripts]
+linux-cop = "linux_cop.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["linux_cop*"]
+
+[tool.setuptools.package-data]
+linux_cop = [
+    "config/*.yaml",
+    "config/*.json",
+    "docs/prompts/*.md",
+    "docs/prompts/mood/*.md",
+    "docs/memory/system/*.json",
+    "logs/*.json"
+]
