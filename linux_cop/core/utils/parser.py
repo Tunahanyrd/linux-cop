@@ -18,8 +18,10 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Table
+from rich.live import Live
+from rich.text import Text
 
-from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, HumanMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, ToolMessage, SystemMessage, HumanMessage
 
 console = Console()
 
@@ -66,9 +68,21 @@ class StreamingRenderer:
     def __init__(self) -> None:
         self.seen_message_ids: set[str] = set()
         self.printed_sysinfo: bool = False
+        self.current_reasoning_live: Optional[Live] = None
+        self.reasoning_buffer: str = ""
+        self.seen_reasonings: set[str] = set()  
+        self.streaming_content: str = ""  
+        self.current_ai_message_id: Optional[str] = None  
 
     def reset_turn(self) -> None:
         self.seen_message_ids.clear()
+        self.seen_reasonings.clear()  
+        if self.current_reasoning_live:
+            self.current_reasoning_live.stop()
+            self.current_reasoning_live = None
+        self.reasoning_buffer = ""
+        self.streaming_content = ""
+        self.current_ai_message_id = None
 
     def _render_sysinfo(self, messages: List[Any]) -> None:
         if self.printed_sysinfo:
@@ -101,51 +115,108 @@ class StreamingRenderer:
         if _looks_like_json(content):
             block = f"```json\n{content}\n```"
         else:
-            block = f"```text\n{content}\n```"
+            block = f"```bash\n{content}\n```"
 
-        console.print(Panel.fit(Markdown(block), title=f"🧰 {name}", border_style="cyan"))
+        console.print(Panel(
+            Markdown(block),
+            title=f"[bold cyan]🔧 Tool Output: {name}[/bold cyan]",
+            border_style="cyan",
+            style="on #1a1a2a"
+        ))
 
     def _render_ai_message(self, ai_msg: Any, *, label: str = "💬 Agent") -> None:
         msg_id = getattr(ai_msg, "id", None)
-        if msg_id and msg_id in self.seen_message_ids:
-            return
-        if msg_id:
-            self.seen_message_ids.add(msg_id)
-
-        raw = _normalize_content(getattr(ai_msg, "content", ""))
-        text = _strip_front_json_blob(raw).strip()
-        if not text:
-            return
-
-        text = _shorten(text, limit=6000)
-        console.print(f"\n[bold green]{label}:[/bold green]")
-        console.print(Markdown(text))
-
+        
         addkw = getattr(ai_msg, "additional_kwargs", {}) or {}
         fc = addkw.get("function_call")
         if fc and isinstance(fc, dict):
             name = fc.get("name", "tool_call")
             args = fc.get("arguments", "")
+            
+            reasoning_sig = f"{name}:{args[:50]}"
+            if reasoning_sig in self.seen_reasonings:
+                return  
+            self.seen_reasonings.add(reasoning_sig)
+            
             if args:
                 try:
                     args_pretty = json.dumps(json.loads(args), ensure_ascii=False, indent=2)
                 except Exception:
                     args_pretty = args
                 panel = f"```json\n{args_pretty}\n```"
-                console.print(Panel.fit(Markdown(panel), title=f"🧭 Plan: {name}()", border_style="yellow"))
+                console.print("\n")
+                console.print(Panel(
+                    Markdown(panel),
+                    title=f"[bold yellow]🧠 Reasoning: {name}()[/bold yellow]",
+                    border_style="yellow",
+                    style="on #2a2a1a"  
+                ))
+            return
+        
+        is_chunk = hasattr(ai_msg, "chunk_position")
+        chunk_pos = getattr(ai_msg, "chunk_position", None)
+        
+        if msg_id and msg_id != self.current_ai_message_id:
+            if self.streaming_content:
+                self._flush_streaming_content()
+            self.current_ai_message_id = msg_id
+            self.streaming_content = ""
+        
+        raw = _normalize_content(getattr(ai_msg, "content", ""))
+        text = _strip_front_json_blob(raw).strip()
+        
+        if text:
+            self.streaming_content += text
+        
+        response_meta = getattr(ai_msg, "response_metadata", {}) or {}
+        is_last = chunk_pos == "last" or response_meta.get("finish_reason") is not None
+        
+        if is_last and self.streaming_content:
+            self._flush_streaming_content()
+    
+    def _flush_streaming_content(self) -> None:
+        """Biriken streaming content'i Panel içinde göster"""
+        if not self.streaming_content:
+            return
+        
+        text = _shorten(self.streaming_content, limit=6000)
+        console.print(f"\n")
+        console.print(Panel(
+            Markdown(text),
+            title="[bold cyan]💬 Linux COP Response[/bold cyan]",
+            border_style="cyan",
+            style="on #1a1a1a" 
+        ))
+        
+        self.streaming_content = ""
+        self.current_ai_message_id = None
 
     def handle_event(self, event: Any, *, show_middleware: bool = True) -> None:
         """
         Process a stream chunk
-        example event:
+        
+        stream_mode="updates" format:
           {'SystemInfoMiddleware.before_model': {'messages': [SystemMessage(...), HumanMessage(...)]}}
-          {'SummarizationMiddleware.before_model': None}
           {'model': {'messages': [AIMessage(...)]}}
           {'tools': {'messages': [ToolMessage(...)]}}
+        
+        stream_mode="messages" format:
+          (message, metadata) tuple where message is AIMessage/ToolMessage/etc
         """
+        if isinstance(event, tuple) and len(event) >= 2:
+            message, metadata = event[0], event[1]
+            
+            if isinstance(message, (AIMessage, AIMessageChunk)):
+                self._render_ai_message(message, label="💬 Agent")
+            elif isinstance(message, ToolMessage):
+                self._render_tool_message(message)
+            elif isinstance(message, SystemMessage) and not self.printed_sysinfo:
+                self._render_sysinfo([message])
+            return
+        
         if not event or not isinstance(event, dict):
             return
-
+        
         for key, payload in event.items():
             if key.endswith(".before_model"):
                 if not show_middleware:

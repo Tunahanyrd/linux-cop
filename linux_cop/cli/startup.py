@@ -33,11 +33,9 @@ def startup_screen():
     console = Console()
     print = console.print
 
-    # Temizle ve logo göster
     console.clear()
     print(f"[bold cyan]{ASCII_LOGO}[/bold cyan]")
     
-    # Loading animasyonu
     with console.status("[bold green]Initializing Linux COP...", spinner="dots") as status:
         time.sleep(0.5)
         status.update("[bold green]Loading configuration...")
@@ -69,7 +67,6 @@ def startup_screen():
     except Exception as e:
         print(f"[yellow]⚠️ Missing mood file: [/yellow] {mood}.md ({e})")
 
-    # Sistem bilgisi tablosu
     table = Table(show_header=False, box=box.ROUNDED, border_style="cyan")
     table.add_column("Key", style="bold yellow", width=15)
     table.add_column("Value", style="bright_white")

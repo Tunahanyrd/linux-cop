@@ -54,11 +54,9 @@ def main():
     
     while True:
         try:
-            # Özel prompt
             user_input = Prompt.ask(
-                "\n[bold green]┌─[[/bold green][bold cyan]� Linux COP[/bold cyan][bold green]][/bold green]"
-                "\n[bold green]└─>[/bold green]",
-                default=""
+                "\n[bold green]┌─[[/bold green][bold cyan]🤖 Linux COP[/bold cyan][bold green]][/bold green]"
+                "\n[bold green]└─>[/bold green]"
             ).strip()
             
             if not user_input:
@@ -71,9 +69,8 @@ def main():
                 continue
             verbosity = context.get("verbosity", "minimal")
             
-            # İşlem başlangıcı göstergesi
-            console.print("\n[dim]Processing your request...[/dim]\n")
-            
+            # GERÇEK ZAMANLI STREAMING - Processing mesajını kaldırdık
+            # Şimdi düşünme zinciri (reasoning), tool çağrıları ve cevap CANLI gösterilecek
             try:
                 run_agent(
                     user_input,

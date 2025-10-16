@@ -75,7 +75,9 @@ def run_agent(user_input: str,
     input_data = {"messages": [time_msg, HumanMessage(content=final_input["content"])]}
     
     reset_parser_state()
-    for event in agent.stream(input_data, stream_mode="updates", config=config):
+    # stream_mode="messages" -> Her mesajı ayrı ayrı stream eder (reasoning dahil)
+    # stream_mode="updates" -> Sadece node update'lerini stream eder
+    for event in agent.stream(input_data, stream_mode="messages", config=config):
         if not event:
             continue
         parse(event, verbosity=verbosity, show_middleware=True)
