@@ -70,13 +70,13 @@ class StreamingRenderer:
         self.printed_sysinfo: bool = False
         self.current_reasoning_live: Optional[Live] = None
         self.reasoning_buffer: str = ""
-        self.seen_reasonings: set[str] = set()  
-        self.streaming_content: str = ""  
-        self.current_ai_message_id: Optional[str] = None  
+        self.seen_reasonings: set[str] = set()  # Reasoning tekrarlarını önlemek için
+        self.streaming_content: str = ""  # Chunk'ları birleştirmek için
+        self.current_ai_message_id: Optional[str] = None  # Hangi message stream ediliyor
 
     def reset_turn(self) -> None:
         self.seen_message_ids.clear()
-        self.seen_reasonings.clear()  
+        self.seen_reasonings.clear()  # Her turda reasoning set'ini de temizle
         if self.current_reasoning_live:
             self.current_reasoning_live.stop()
             self.current_reasoning_live = None
@@ -127,6 +127,33 @@ class StreamingRenderer:
     def _render_ai_message(self, ai_msg: Any, *, label: str = "💬 Agent") -> None:
         msg_id = getattr(ai_msg, "id", None)
         
+        # ÖNCELİK 0: Gemini'nin reasoning token'larını kontrol et
+        usage_meta = getattr(ai_msg, "usage_metadata", {}) or {}
+        output_details = usage_meta.get("output_token_details", {}) or {}
+        reasoning_tokens = output_details.get("reasoning", 0)
+        
+        # İLK CHUNK'ta reasoning varsa göster
+        if reasoning_tokens > 0 and msg_id not in self.seen_reasonings:
+            self.seen_reasonings.add(msg_id)
+            
+            # Reasoning token miktarına göre mesaj
+            if reasoning_tokens > 1000:
+                thinking_msg = "Deeply analyzing the problem and considering multiple approaches..."
+            elif reasoning_tokens > 500:
+                thinking_msg = "Carefully thinking through the solution..."
+            elif reasoning_tokens > 200:
+                thinking_msg = "Processing your request..."
+            else:
+                thinking_msg = "Analyzing..."
+            
+            console.print("\n")
+            console.print(Panel(
+                f"[dim italic]{thinking_msg}[/dim italic]",
+                title=f"[bold yellow]🧠 Thinking[/bold yellow]",
+                border_style="yellow",
+                style="on #2a2a1a"
+            ))
+        
         addkw = getattr(ai_msg, "additional_kwargs", {}) or {}
         fc = addkw.get("function_call")
         if fc and isinstance(fc, dict):
@@ -147,27 +174,35 @@ class StreamingRenderer:
                 console.print("\n")
                 console.print(Panel(
                     Markdown(panel),
-                    title=f"[bold yellow]🧠 Reasoning: {name}()[/bold yellow]",
+                    title=f"[bold yellow]🔧 Tool Call: {name}()[/bold yellow]",
                     border_style="yellow",
                     style="on #2a2a1a"  
                 ))
+            # Tool call gösterildikten sonra return et - content başka message'da gelecek
             return
         
+        # ÖNCELİK 2: AI Content mesajını göster (streaming chunks)
+        # AIMessageChunk ise streaming mode - chunk'ları birleştir
         is_chunk = hasattr(ai_msg, "chunk_position")
         chunk_pos = getattr(ai_msg, "chunk_position", None)
         
+        # Yeni message başladı mı kontrol et
         if msg_id and msg_id != self.current_ai_message_id:
+            # Önceki message varsa bitir
             if self.streaming_content:
                 self._flush_streaming_content()
+            # Yeni message başlat
             self.current_ai_message_id = msg_id
             self.streaming_content = ""
         
+        # Content'i al ve birleştir
         raw = _normalize_content(getattr(ai_msg, "content", ""))
         text = _strip_front_json_blob(raw).strip()
         
         if text:
             self.streaming_content += text
         
+        # Son chunk mı? (chunk_position='last' veya finish_reason var)
         response_meta = getattr(ai_msg, "response_metadata", {}) or {}
         is_last = chunk_pos == "last" or response_meta.get("finish_reason") is not None
         
@@ -188,6 +223,7 @@ class StreamingRenderer:
             style="on #1a1a1a" 
         ))
         
+        # Buffer'ı temizle
         self.streaming_content = ""
         self.current_ai_message_id = None
 
@@ -203,9 +239,11 @@ class StreamingRenderer:
         stream_mode="messages" format:
           (message, metadata) tuple where message is AIMessage/ToolMessage/etc
         """
+        # stream_mode="messages" ise tuple gelir: (message, metadata)
         if isinstance(event, tuple) and len(event) >= 2:
             message, metadata = event[0], event[1]
             
+            # AIMessage veya AIMessageChunk (streaming chunks)
             if isinstance(message, (AIMessage, AIMessageChunk)):
                 self._render_ai_message(message, label="💬 Agent")
             elif isinstance(message, ToolMessage):
@@ -214,6 +252,7 @@ class StreamingRenderer:
                 self._render_sysinfo([message])
             return
         
+        # stream_mode="updates" ise dict gelir
         if not event or not isinstance(event, dict):
             return
         

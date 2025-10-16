@@ -81,7 +81,7 @@ def run_agent(user_input: str,
         if not event:
             continue
         parse(event, verbosity=verbosity, show_middleware=True)
-
+    
 
         
 
