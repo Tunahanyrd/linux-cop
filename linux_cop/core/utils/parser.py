@@ -19,13 +19,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Table
 
-try:
-    from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, HumanMessage
-except Exception:
-    AIMessage = type("AIMessage", (), {})
-    ToolMessage = type("ToolMessage", (), {})
-    SystemMessage = type("SystemMessage", (), {})
-    HumanMessage = type("HumanMessage", (), {})
+from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, HumanMessage
 
 console = Console()
 
